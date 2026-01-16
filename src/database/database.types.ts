@@ -42,38 +42,74 @@ export type Database = {
       appointments: {
         Row: {
           appointment_id: string
+          clinic_id: string | null
           created_at: string | null
+          created_by: string | null
           did_show_up: boolean | null
           duration_in_minutes: number
+          end_datetime: string | null
           is_emergency: boolean | null
           is_follow_up_pending: boolean | null
+          modified_by: string | null
           patient_id: string | null
           start_datetime: string
           status: string | null
+          updated_at: string | null
         }
         Insert: {
           appointment_id?: string
+          clinic_id?: string | null
           created_at?: string | null
+          created_by?: string | null
           did_show_up?: boolean | null
           duration_in_minutes: number
+          end_datetime?: string | null
           is_emergency?: boolean | null
           is_follow_up_pending?: boolean | null
+          modified_by?: string | null
           patient_id?: string | null
           start_datetime: string
           status?: string | null
+          updated_at?: string | null
         }
         Update: {
           appointment_id?: string
+          clinic_id?: string | null
           created_at?: string | null
+          created_by?: string | null
           did_show_up?: boolean | null
           duration_in_minutes?: number
+          end_datetime?: string | null
           is_emergency?: boolean | null
           is_follow_up_pending?: boolean | null
+          modified_by?: string | null
           patient_id?: string | null
           start_datetime?: string
           status?: string | null
+          updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["clinic_id"]
+          },
+          {
+            foreignKeyName: "appointments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "appointments_modified_by_fkey"
+            columns: ["modified_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "appointments_patient_id_fkey"
             columns: ["patient_id"]
@@ -83,26 +119,184 @@ export type Database = {
           },
         ]
       }
-      patients: {
+      clinic_join_requests: {
         Row: {
+          clinic_id: string
+          created_at: string | null
+          request_id: string
+          requested_at: string | null
+          responded_at: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string | null
+          request_id?: string
+          requested_at?: string | null
+          responded_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string | null
+          request_id?: string
+          requested_at?: string | null
+          responded_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_join_requests_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["clinic_id"]
+          },
+          {
+            foreignKeyName: "clinic_join_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      clinics: {
+        Row: {
+          address: string | null
+          clinic_id: string
           contact: string | null
           created_at: string | null
+          name: string
+          owner_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          clinic_id?: string
+          contact?: string | null
+          created_at?: string | null
+          name: string
+          owner_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          clinic_id?: string
+          contact?: string | null
+          created_at?: string | null
+          name?: string
+          owner_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinics_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          clinic_id: string | null
+          contact: string | null
+          created_at: string | null
+          created_by: string | null
+          modified_by: string | null
           name: string
           patient_id: string
         }
         Insert: {
+          clinic_id?: string | null
           contact?: string | null
           created_at?: string | null
+          created_by?: string | null
+          modified_by?: string | null
           name: string
           patient_id?: string
         }
         Update: {
+          clinic_id?: string | null
           contact?: string | null
           created_at?: string | null
+          created_by?: string | null
+          modified_by?: string | null
           name?: string
           patient_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "patients_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["clinic_id"]
+          },
+          {
+            foreignKeyName: "patients_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "patients_modified_by_fkey"
+            columns: ["modified_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          clinic_id: string | null
+          contact: string | null
+          created_at: string | null
+          email: string
+          name: string
+          password_hash: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          clinic_id?: string | null
+          contact?: string | null
+          created_at?: string | null
+          email: string
+          name: string
+          password_hash: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Update: {
+          clinic_id?: string | null
+          contact?: string | null
+          created_at?: string | null
+          email?: string
+          name?: string
+          password_hash?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["clinic_id"]
+          },
+        ]
       }
     }
     Views: {

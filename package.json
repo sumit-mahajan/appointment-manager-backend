@@ -9,13 +9,14 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "db:types": "supabase gen types typescript --linked > src/types/database.types.ts",
+    "db:types": "supabase gen types typescript --linked > src/database/database.types.ts",
     "db:push": "supabase db push"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.6",
-    "nodemon": "^3.1.11",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "supabase": "^2.72.7",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
@@ -23,6 +24,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }
