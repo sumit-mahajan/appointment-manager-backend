@@ -9,12 +9,12 @@ This project follows a layered clean architecture pattern:
 ```
 ┌─────────────────────────────────────────────────┐
 │              Routes Layer                        │
-│  (Express route handlers + validation)          │
+│  (auth + route handlers + validation)          │
 └─────────────────────────────────────────────────┘
                       ↓
 ┌─────────────────────────────────────────────────┐
 │            Services Layer                        │
-│  (Business logic + authorization)                │
+│           (Business logic )                      │
 └─────────────────────────────────────────────────┘
                       ↓
 ┌─────────────────────────────────────────────────┐
@@ -291,6 +291,15 @@ See `supabase/migrations/` for detailed schema.
 # Start development server with auto-reload
 npm run dev
 
+# Run unit tests (Jest)
+npm test
+
+# Run unit tests in watch mode
+npm run test:watch
+
+# Run unit tests with coverage report
+npm run test:cov
+
 # Generate TypeScript types from Supabase
 npm run db:types
 
@@ -307,6 +316,28 @@ npm run db:push
 5. **Register route** in `src/routes/index.ts`
 
 ## Testing
+
+### Unit tests (Jest)
+
+This project uses **Jest + ts-jest** for unit testing services, middleware, and validators.
+
+```bash
+# Run all unit tests
+npm test
+
+# Watch mode
+npm run test:watch
+
+# Coverage (text + lcov)
+npm run test:cov
+```
+
+- **Test locations**: `src/**/__tests__/**/*.test.ts`
+- **Jest config**: `jest.config.cjs` (TypeScript + ESM preset, coverage paths)
+- **Coverage output**: `coverage/` (already ignored via `.gitignore`)
+- **ESM note**: package uses `"type": "module"`; tests run with Node `--experimental-vm-modules` as configured in `package.json`.
+
+### Manual testing (Swagger)
 
 Access the API documentation at `http://localhost:3000/api-docs` to test endpoints using the Swagger UI.
 
