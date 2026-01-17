@@ -19,187 +19,80 @@ const options: swaggerJsdoc.Options = {
       },
     ],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
       schemas: {
         Patient: {
           type: "object",
           properties: {
-            patient_id: {
-              type: "string",
-              format: "uuid",
-              description: "Unique patient identifier",
-            },
-            name: {
-              type: "string",
-              description: "Patient full name",
-            },
-            contact: {
-              type: "string",
-              description: "Patient contact information",
-            },
-            created_at: {
-              type: "string",
-              format: "date-time",
-              description: "Timestamp when patient was created",
-            },
-          },
-        },
-        PatientInsert: {
-          type: "object",
-          required: ["name", "contact"],
-          properties: {
-            name: {
-              type: "string",
-              description: "Patient full name",
-            },
-            contact: {
-              type: "string",
-              description: "Patient contact information",
-            },
+            patient_id: { type: "string", format: "uuid" },
+            name: { type: "string" },
+            contact: { type: "string" },
+            created_at: { type: "string", format: "date-time" },
           },
         },
         Appointment: {
           type: "object",
           properties: {
-            appointment_id: {
-              type: "string",
-              format: "uuid",
-              description: "Unique appointment identifier",
-            },
-            patient_id: {
-              type: "string",
-              format: "uuid",
-              description: "Associated patient ID",
-            },
-            start_datetime: {
-              type: "string",
-              format: "date-time",
-              description: "Appointment start time",
-            },
-            end_datetime: {
-              type: "string",
-              format: "date-time",
-              description: "Appointment end time (calculated from duration)",
-            },
-            duration_in_minutes: {
-              type: "integer",
-              description: "Appointment duration in minutes",
-            },
-            is_emergency: {
-              type: "boolean",
-              description: "Whether appointment is an emergency",
-            },
-            is_follow_up_pending: {
-              type: "boolean",
-              description: "Whether follow-up is required",
-            },
+            appointment_id: { type: "string", format: "uuid" },
+            patient_id: { type: "string", format: "uuid" },
+            start_datetime: { type: "string", format: "date-time" },
+            end_datetime: { type: "string", format: "date-time" },
+            duration_in_minutes: { type: "integer" },
+            status: { type: "string", enum: ["confirm", "pending", "cancel"] },
+            is_emergency: { type: "boolean" },
+            is_follow_up_pending: { type: "boolean" },
+            did_show_up: { type: "boolean" },
+          },
+        },
+        User: {
+          type: "object",
+          properties: {
+            user_id: { type: "string", format: "uuid" },
+            email: { type: "string" },
+            name: { type: "string" },
+            clinic_id: { type: "string", format: "uuid", nullable: true },
+          },
+        },
+        Clinic: {
+          type: "object",
+          properties: {
+            clinic_id: { type: "string", format: "uuid" },
+            name: { type: "string" },
+            address: { type: "string", nullable: true },
+            contact: { type: "string", nullable: true },
+            owner_id: { type: "string", format: "uuid" },
+          },
+        },
+        ClinicJoinRequest: {
+          type: "object",
+          properties: {
+            request_id: { type: "string", format: "uuid" },
+            user_id: { type: "string", format: "uuid" },
+            clinic_id: { type: "string", format: "uuid" },
             status: {
               type: "string",
-              enum: ["confirm", "pending", "cancel"],
-              description: "Appointment status",
-            },
-            did_show_up: {
-              type: "boolean",
-              description: "Whether patient showed up",
-            },
-            created_at: {
-              type: "string",
-              format: "date-time",
-              description: "Timestamp when appointment was created",
-            },
-            updated_at: {
-              type: "string",
-              format: "date-time",
-              description: "Timestamp when appointment was last updated",
+              enum: ["pending", "approved", "rejected"],
             },
           },
         },
-        AppointmentInsert: {
-          type: "object",
-          required: [
-            "patient_id",
-            "start_datetime",
-            "duration_in_minutes",
-            "status",
-          ],
-          properties: {
-            patient_id: {
-              type: "string",
-              format: "uuid",
-              description: "Associated patient ID",
-            },
-            start_datetime: {
-              type: "string",
-              format: "date-time",
-              description: "Appointment start time",
-            },
-            end_datetime: {
-              type: "string",
-              format: "date-time",
-              description: "Appointment end time (calculated from duration)",
-            },
-            duration_in_minutes: {
-              type: "integer",
-              description: "Appointment duration in minutes",
-            },
-            is_emergency: {
-              type: "boolean",
-              description: "Whether appointment is an emergency",
-              default: false,
-            },
-            is_follow_up_pending: {
-              type: "boolean",
-              description: "Whether follow-up is required",
-              default: false,
-            },
-            status: {
-              type: "string",
-              enum: ["confirm", "pending", "cancel"],
-              description: "Appointment status",
-              default: "pending",
-            },
-            did_show_up: {
-              type: "boolean",
-              description: "Whether patient showed up",
-              default: false,
-            },
-          },
-        },
-        ApiResponse: {
+        AuthResponse: {
           type: "object",
           properties: {
-            success: {
-              type: "boolean",
-            },
-            data: {
-              type: "object",
-              nullable: true,
-            },
-            error: {
+            token: { type: "string" },
+            user: {
               type: "object",
               properties: {
-                code: {
-                  type: "string",
-                },
-                message: {
-                  type: "string",
-                },
-                details: {
-                  type: "object",
-                },
-              },
-            },
-            meta: {
-              type: "object",
-              properties: {
-                page: {
-                  type: "integer",
-                },
-                limit: {
-                  type: "integer",
-                },
-                total: {
-                  type: "integer",
-                },
+                user_id: { type: "string", format: "uuid" },
+                email: { type: "string" },
+                name: { type: "string" },
+                clinic_id: { type: "string", format: "uuid", nullable: true },
+                role: { type: "string", nullable: true },
               },
             },
           },
@@ -207,27 +100,25 @@ const options: swaggerJsdoc.Options = {
         Error: {
           type: "object",
           properties: {
-            error: {
-              type: "string",
-              description: "Error message",
-            },
+            success: { type: "boolean", example: false },
+            error: { type: "string" },
+            details: { type: "object", nullable: true },
           },
         },
         SuccessResponse: {
           type: "object",
           properties: {
-            message: {
-              type: "string",
-              description: "Success message",
-            },
-            data: {
-              type: "object",
-              description: "Response data",
-            },
+            success: { type: "boolean", example: true },
+            data: { type: "object" },
           },
         },
       },
     },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
   apis: ["./src/index.ts", "./src/routes/*.ts"],
 };
