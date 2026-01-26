@@ -2,6 +2,7 @@
 export interface JwtPayload {
   user_id: string;
   email: string;
+  name: string;
   clinic_id: string | null;
   role: "OWNER" | "STAFF" | null;
 }
@@ -10,6 +11,7 @@ export interface JwtPayload {
 export interface AuthUser {
   user_id: string;
   email: string;
+  name: string;
   clinic_id: string | null;
   role: "OWNER" | "STAFF" | null;
 }

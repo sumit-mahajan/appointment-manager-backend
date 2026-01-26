@@ -6,6 +6,7 @@ import {
 } from "express";
 import { container } from "tsyringe";
 import { ClinicService } from "../services/clinic.service.js";
+import { AuthService } from "../services/auth.service.js";
 import {
   authenticate,
   requireClinic,
@@ -100,11 +101,22 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const clinicService = container.resolve(ClinicService);
+      const authService = container.resolve(AuthService);
+
+      // Create clinic
       const clinic = await clinicService.createClinic(
         req.user!.user_id,
         req.body
       );
-      ResponseUtil.created(res, clinic);
+
+      // Generate fresh token with updated clinic_id
+      const authResult = await authService.generateTokenForUser(req.user!.user_id);
+
+      // Return both clinic and new token
+      ResponseUtil.created(res, {
+        clinic,
+        token: authResult.token,
+      });
     } catch (error) {
       next(error);
     }

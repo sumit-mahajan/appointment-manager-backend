@@ -3,6 +3,7 @@ import "reflect-metadata";
 import "./di/container.js";
 
 import express, { type Request, type Response } from "express";
+import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
 import { registerRoutes } from "./routes/index.js";
@@ -15,6 +16,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 
 // Swagger UI setup

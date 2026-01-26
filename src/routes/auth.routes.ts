@@ -6,6 +6,7 @@ import {
 } from "express";
 import { container } from "tsyringe";
 import { AuthService } from "../services/auth.service.js";
+import { authenticate } from "../middleware/auth.middleware.js";
 import { validate } from "../middleware/validation.middleware.js";
 import { registerSchema, loginSchema } from "../validators/auth.validator.js";
 import { ResponseUtil } from "../utils/response.util.js";
@@ -95,6 +96,50 @@ router.post(
     try {
       const authService = container.resolve(AuthService);
       const result = await authService.login(req.body);
+      ResponseUtil.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get current user with fresh token
+ *     description: Returns user info and a new JWT based on current database state. Used to check for clinic updates after join approval.
+ *     tags: [Authentication]
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: User info with fresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token: { type: string }
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         user_id: { type: string }
+ *                         email: { type: string }
+ *                         name: { type: string }
+ *                         clinic_id: { type: string, nullable: true }
+ *                         role: { type: string, nullable: true, enum: [OWNER, STAFF] }
+ */
+router.get(
+  "/me",
+  authenticate,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authService = container.resolve(AuthService);
+      const result = await authService.generateTokenForUser(req.user!.user_id);
       ResponseUtil.success(res, result);
     } catch (error) {
       next(error);

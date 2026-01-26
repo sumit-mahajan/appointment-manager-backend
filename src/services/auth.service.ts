@@ -21,7 +21,49 @@ export class AuthService {
     private userRepository: UserRepository,
     @inject(ClinicRepository)
     private clinicRepository: ClinicRepository
-  ) {}
+  ) { }
+
+  /**
+   * Generate a fresh JWT token for a user based on their current database state
+   * This is used after mutations that change clinic_id or role
+   */
+  async generateTokenForUser(userId: string): Promise<LoginResponse> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedError("User not found");
+    }
+
+    // Determine role dynamically
+    let role: "OWNER" | "STAFF" | null = null;
+    if (user.clinic_id) {
+      const clinic = await this.clinicRepository.findById(user.clinic_id);
+      if (clinic && clinic.owner_id === user.user_id) {
+        role = "OWNER";
+      } else {
+        role = "STAFF";
+      }
+    }
+
+    // Generate JWT token
+    const token = JwtUtil.sign({
+      user_id: user.user_id,
+      email: user.email,
+      name: user.name,
+      clinic_id: user.clinic_id,
+      role,
+    });
+
+    return {
+      token,
+      user: {
+        user_id: user.user_id,
+        email: user.email,
+        name: user.name,
+        clinic_id: user.clinic_id,
+        role,
+      },
+    };
+  }
 
   async register(dto: RegisterDto): Promise<LoginResponse> {
     // Check if user already exists
@@ -46,6 +88,7 @@ export class AuthService {
     const token = JwtUtil.sign({
       user_id: user.user_id,
       email: user.email,
+      name: user.name,
       clinic_id: null,
       role: null,
     });
@@ -93,6 +136,7 @@ export class AuthService {
     const token = JwtUtil.sign({
       user_id: user.user_id,
       email: user.email,
+      name: user.name,
       clinic_id: user.clinic_id,
       role,
     });
