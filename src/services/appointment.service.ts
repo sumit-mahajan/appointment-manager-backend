@@ -24,6 +24,7 @@ interface UpdateAppointmentDto {
   end?: string;
   durationInMinutes?: number;
   didShowUp?: boolean;
+  isEmergency?: boolean;
 }
 
 @injectable()
@@ -33,7 +34,7 @@ export class AppointmentService {
     private appointmentRepository: AppointmentRepository,
     @inject(PatientRepository)
     private patientRepository: PatientRepository
-  ) {}
+  ) { }
 
   async createAppointment(
     clinicId: string,
@@ -49,14 +50,16 @@ export class AppointmentService {
       throw new BadRequestError("Patient does not belong to this clinic");
     }
 
-    // Check availability
-    const isAvailable = await this.appointmentRepository.checkAvailability(
-      clinicId,
-      dto.start,
-      dto.end
-    );
-    if (!isAvailable) {
-      throw new ConflictError("Time slot is not available");
+    // Check availability (skip for emergency appointments)
+    if (!dto.isEmergency) {
+      const isAvailable = await this.appointmentRepository.checkAvailability(
+        clinicId,
+        dto.start,
+        dto.end
+      );
+      if (!isAvailable) {
+        throw new ConflictError("Time slot is not available");
+      }
     }
 
     // Calculate duration if not provided
@@ -123,12 +126,21 @@ export class AppointmentService {
       modified_by: userId,
     };
 
-    if (dto.status) updateData.status = dto.status;
+    if (dto.status) {
+      updateData.status = dto.status;
+      // Auto-manage is_follow_up_pending based on status
+      if (dto.status === 'confirm' || dto.status === 'cancel') {
+        updateData.is_follow_up_pending = false;
+      } else if (dto.status === 'pending') {
+        updateData.is_follow_up_pending = true;
+      }
+    }
     if (dto.start) updateData.start_datetime = dto.start;
     if (dto.end) updateData.end_datetime = dto.end;
     if (dto.durationInMinutes)
       updateData.duration_in_minutes = dto.durationInMinutes;
     if (dto.didShowUp !== undefined) updateData.did_show_up = dto.didShowUp;
+    if (dto.isEmergency !== undefined) updateData.is_emergency = dto.isEmergency;
 
     return this.appointmentRepository.update(appointmentId, updateData);
   }
@@ -159,12 +171,14 @@ export class AppointmentService {
   async checkAvailability(
     clinicId: string,
     start: string,
-    end: string
+    end: string,
+    excludeAppointmentId?: string
   ): Promise<{ available: boolean }> {
     const isAvailable = await this.appointmentRepository.checkAvailability(
       clinicId,
       start,
-      end
+      end,
+      excludeAppointmentId
     );
     return { available: isAvailable };
   }

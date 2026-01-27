@@ -24,6 +24,7 @@ export const updateAppointmentSchema = z.object({
     end: z.string().datetime({ message: "Invalid end datetime" }).optional(),
     durationInMinutes: z.number().positive().optional(),
     didShowUp: z.boolean().optional(),
+    isEmergency: z.boolean().optional(),
   }),
 });
 
@@ -49,6 +50,7 @@ export const availabilitySchema = z.object({
   query: z.object({
     start: z.string().datetime({ message: "Invalid start datetime" }),
     end: z.string().datetime({ message: "Invalid end datetime" }),
+    excludeAppointmentId: z.string().uuid().optional(),
   }),
 });
 

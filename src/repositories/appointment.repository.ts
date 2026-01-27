@@ -71,7 +71,14 @@ export class AppointmentRepository {
   ): Promise<Appointment[]> {
     let query = this.supabase
       .from("appointments")
-      .select("*")
+      .select(`
+        *,
+        patients (
+          patient_id,
+          name,
+          contact
+        )
+      `)
       .eq("clinic_id", clinicId);
 
     if (filters?.startDate) {
@@ -91,6 +98,7 @@ export class AppointmentRepository {
     });
 
     if (error) {
+      console.error("Error finding appointments:", error);
       throw new Error(`Error finding appointments: ${error.message}`);
     }
 

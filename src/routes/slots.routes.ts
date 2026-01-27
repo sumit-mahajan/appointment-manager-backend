@@ -31,6 +31,10 @@ const router = Router();
  *         required: true
  *         schema: { type: string, format: date-time }
  *         description: End time to check (ISO 8601)
+ *       - in: query
+ *         name: excludeAppointmentId
+ *         schema: { type: string, format: uuid }
+ *         description: Appointment ID to exclude from conflict check (for rescheduling)
  *     responses:
  *       200:
  *         description: Availability status
@@ -56,7 +60,8 @@ router.get(
       const result = await appointmentService.checkAvailability(
         req.user!.clinic_id!,
         req.query.start as string,
-        req.query.end as string
+        req.query.end as string,
+        req.query.excludeAppointmentId as string | undefined
       );
       ResponseUtil.success(res, result);
     } catch (error) {
