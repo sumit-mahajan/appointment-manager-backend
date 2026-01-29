@@ -4,6 +4,7 @@ export interface JwtPayload {
   email: string;
   name: string;
   clinic_id: string | null;
+  clinic_name: string | null;
   role: "OWNER" | "STAFF" | null;
 }
 

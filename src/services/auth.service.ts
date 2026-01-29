@@ -33,14 +33,18 @@ export class AuthService {
       throw new UnauthorizedError("User not found");
     }
 
-    // Determine role dynamically
+    // Determine role dynamically and get clinic name
     let role: "OWNER" | "STAFF" | null = null;
+    let clinicName: string | null = null;
     if (user.clinic_id) {
       const clinic = await this.clinicRepository.findById(user.clinic_id);
-      if (clinic && clinic.owner_id === user.user_id) {
-        role = "OWNER";
-      } else {
-        role = "STAFF";
+      if (clinic) {
+        clinicName = clinic.name;
+        if (clinic.owner_id === user.user_id) {
+          role = "OWNER";
+        } else {
+          role = "STAFF";
+        }
       }
     }
 
@@ -50,6 +54,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       clinic_id: user.clinic_id,
+      clinic_name: clinicName,
       role,
     });
 
@@ -90,6 +95,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       clinic_id: null,
+      clinic_name: null,
       role: null,
     });
 
@@ -121,14 +127,18 @@ export class AuthService {
       throw new UnauthorizedError("Invalid email or password");
     }
 
-    // Determine role dynamically
+    // Determine role dynamically and get clinic name
     let role: "OWNER" | "STAFF" | null = null;
+    let clinicName: string | null = null;
     if (user.clinic_id) {
       const clinic = await this.clinicRepository.findById(user.clinic_id);
-      if (clinic && clinic.owner_id === user.user_id) {
-        role = "OWNER";
-      } else {
-        role = "STAFF";
+      if (clinic) {
+        clinicName = clinic.name;
+        if (clinic.owner_id === user.user_id) {
+          role = "OWNER";
+        } else {
+          role = "STAFF";
+        }
       }
     }
 
@@ -138,6 +148,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       clinic_id: user.clinic_id,
+      clinic_name: clinicName,
       role,
     });
 
