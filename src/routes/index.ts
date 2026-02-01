@@ -5,6 +5,7 @@ import clinicAdminRoutes from "./clinic-admin.routes.js";
 import patientRoutes from "./patient.routes.js";
 import appointmentRoutes from "./appointment.routes.js";
 import slotsRoutes from "./slots.routes.js";
+import aiRoutes from "./ai.routes.js";
 
 /**
  * Register all application routes
@@ -27,4 +28,7 @@ export function registerRoutes(app: Express): void {
 
   // Slots/availability routes
   app.use("/slots", slotsRoutes);
+
+  // AI chat routes
+  app.use("/ai", aiRoutes);
 }

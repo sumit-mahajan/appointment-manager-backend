@@ -10,6 +10,7 @@ import { AuthService } from "../services/auth.service.js";
 import { ClinicService } from "../services/clinic.service.js";
 import { PatientService } from "../services/patient.service.js";
 import { AppointmentService } from "../services/appointment.service.js";
+import { AIService } from "../services/ai.service.js";
 
 // Register Supabase client as singleton
 container.register("SupabaseClient", {
@@ -29,5 +30,6 @@ container.register(AuthService, { useClass: AuthService });
 container.register(ClinicService, { useClass: ClinicService });
 container.register(PatientService, { useClass: PatientService });
 container.register(AppointmentService, { useClass: AppointmentService });
+container.register(AIService, { useClass: AIService });
 
 export { container };

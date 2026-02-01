@@ -271,7 +271,7 @@ describe("AppointmentService", () => {
           appointmentRepository.checkAvailability.mockResolvedValue(true);
           const result = await appointmentService.checkAvailability("clinic-1", "start", "end");
           expect(result).toEqual({ available: true });
-          expect(appointmentRepository.checkAvailability).toHaveBeenCalledWith("clinic-1", "start", "end");
+          expect(appointmentRepository.checkAvailability).toHaveBeenCalledWith("clinic-1", "start", "end", undefined);
       });
   });
 });
