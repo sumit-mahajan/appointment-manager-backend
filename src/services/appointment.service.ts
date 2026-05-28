@@ -82,6 +82,45 @@ export class AppointmentService {
       is_follow_up_pending: dto.isFollowUpPending || false,
       status: "pending",
       did_show_up: false,
+      booked_via: "staff",
+    });
+  }
+
+  /** Public patient portal booking — always pending, tagged for receptionist */
+  async createPublicAppointment(
+    clinicId: string,
+    ownerUserId: string,
+    dto: {
+      patientId: string;
+      start: string;
+      end: string;
+      reason: string | null;
+    }
+  ): Promise<Appointment> {
+    const patient = await this.patientRepository.findById(dto.patientId);
+    if (!patient || patient.clinic_id !== clinicId) {
+      throw new BadRequestError("Invalid patient for this clinic");
+    }
+
+    const startTime = new Date(dto.start);
+    const endTime = new Date(dto.end);
+    const duration = Math.round(
+      (endTime.getTime() - startTime.getTime()) / 60000
+    );
+
+    return this.appointmentRepository.create({
+      patient_id: dto.patientId,
+      clinic_id: clinicId,
+      created_by: ownerUserId,
+      start_datetime: dto.start,
+      end_datetime: dto.end,
+      duration_in_minutes: duration,
+      is_emergency: false,
+      is_follow_up_pending: true,
+      status: "pending",
+      did_show_up: false,
+      reason: dto.reason,
+      booked_via: "patient",
     });
   }
 

@@ -64,6 +64,8 @@ describe("AppointmentService", () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         modified_by: null,
+        reason: null,
+        booked_via: 'staff',
       };
       appointmentRepository.create.mockResolvedValue(createdAppointment);
 
@@ -155,6 +157,8 @@ describe("AppointmentService", () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       modified_by: null,
+      reason: null,
+      booked_via: 'staff',
     };
 
     it("should update appointment successfully", async () => {

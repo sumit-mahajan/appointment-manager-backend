@@ -1,6 +1,6 @@
 import "reflect-metadata";
-import { container, delay } from "tsyringe";
-import { supabase } from "../database/supabase.js";
+import { container } from "tsyringe";
+import { pool } from "../database/db.js";
 import { UserRepository } from "../repositories/user.repository.js";
 import { ClinicRepository } from "../repositories/clinic.repository.js";
 import { ClinicJoinRequestRepository } from "../repositories/clinic-join-request.repository.js";
@@ -11,13 +11,10 @@ import { ClinicService } from "../services/clinic.service.js";
 import { PatientService } from "../services/patient.service.js";
 import { AppointmentService } from "../services/appointment.service.js";
 import { AIService } from "../services/ai.service.js";
+import { PublicBookingService } from "../services/public-booking.service.js";
 
-// Register Supabase client as singleton
-container.register("SupabaseClient", {
-  useValue: supabase,
-});
+container.register("DbPool", { useValue: pool });
 
-// Explicit registration to solve "TypeInfo not known" issues in some ESM environments
 container.register(UserRepository, { useClass: UserRepository });
 container.register(ClinicRepository, { useClass: ClinicRepository });
 container.register(ClinicJoinRequestRepository, {
@@ -31,5 +28,6 @@ container.register(ClinicService, { useClass: ClinicService });
 container.register(PatientService, { useClass: PatientService });
 container.register(AppointmentService, { useClass: AppointmentService });
 container.register(AIService, { useClass: AIService });
+container.register(PublicBookingService, { useClass: PublicBookingService });
 
 export { container };

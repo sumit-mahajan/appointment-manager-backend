@@ -1,12 +1,13 @@
-import type { Database } from "../database/database.types.js";
+import type { ClinicJoinRequestRow } from "../database/database.types.js";
 
-// Use generated Supabase types as base
-export type ClinicJoinRequest =
-  Database["public"]["Tables"]["clinic_join_requests"]["Row"];
-export type ClinicJoinRequestInsert =
-  Database["public"]["Tables"]["clinic_join_requests"]["Insert"];
-export type ClinicJoinRequestUpdate =
-  Database["public"]["Tables"]["clinic_join_requests"]["Update"];
+export type ClinicJoinRequest = ClinicJoinRequestRow;
+export type ClinicJoinRequestInsert = Pick<
+  ClinicJoinRequestRow,
+  "user_id" | "clinic_id"
+> &
+  Partial<Pick<ClinicJoinRequestRow, "status">>;
+export type ClinicJoinRequestUpdate = Partial<
+  Omit<ClinicJoinRequestRow, "request_id" | "created_at">
+>;
 
-// Type-safe status enum
 export type ClinicJoinRequestStatus = "pending" | "approved" | "rejected";

@@ -1,6 +1,8 @@
-import type { Database } from "../database/database.types.js";
+import type { ClinicRow } from "../database/database.types.js";
 
-// Use generated Supabase types as base
-export type Clinic = Database["public"]["Tables"]["clinics"]["Row"];
-export type ClinicInsert = Database["public"]["Tables"]["clinics"]["Insert"];
-export type ClinicUpdate = Database["public"]["Tables"]["clinics"]["Update"];
+export type Clinic = ClinicRow;
+export type ClinicInsert = Pick<ClinicRow, "name" | "owner_id"> &
+  Partial<Pick<ClinicRow, "contact" | "address">>;
+export type ClinicUpdate = Partial<
+  Omit<ClinicRow, "clinic_id" | "created_at" | "updated_at">
+>;

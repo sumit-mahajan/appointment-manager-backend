@@ -52,9 +52,8 @@ app.get("/api-docs.json", (req: Request, res: Response) => {
  */
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({
-    success: true,
-    message: "OK",
-    timestamp: new Date().toISOString(),
+    status: "ok",
+    timestamp: Date.now(),
   });
 });
 

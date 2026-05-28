@@ -1,6 +1,5 @@
 import { injectable, inject } from "tsyringe";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../database/database.types.js";
+import type { Pool } from "pg";
 import type {
   ClinicJoinRequest,
   ClinicJoinRequestInsert,
@@ -9,113 +8,79 @@ import type {
 
 @injectable()
 export class ClinicJoinRequestRepository {
-  constructor(
-    @inject("SupabaseClient")
-    private supabase: SupabaseClient<Database>
-  ) {}
+  constructor(@inject("DbPool") private pool: Pool) {}
 
   async create(
     requestData: ClinicJoinRequestInsert
   ): Promise<ClinicJoinRequest> {
-    const { data, error } = await this.supabase
-      .from("clinic_join_requests")
-      .insert(requestData)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`Error creating join request: ${error.message}`);
-    }
-
-    return data;
+    const { rows } = await this.pool.query<ClinicJoinRequest>(
+      `INSERT INTO clinic_join_requests (user_id, clinic_id, status)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [
+        requestData.user_id,
+        requestData.clinic_id,
+        requestData.status ?? "pending",
+      ]
+    );
+    return rows[0];
   }
 
   async findById(requestId: string): Promise<ClinicJoinRequest | null> {
-    const { data, error } = await this.supabase
-      .from("clinic_join_requests")
-      .select("*")
-      .eq("request_id", requestId)
-      .single();
-
-    if (error) {
-      if (error.code === "PGRST116") return null; // Not found
-      throw new Error(`Error finding join request: ${error.message}`);
-    }
-
-    return data;
+    const { rows } = await this.pool.query<ClinicJoinRequest>(
+      "SELECT * FROM clinic_join_requests WHERE request_id = $1",
+      [requestId]
+    );
+    return rows[0] ?? null;
   }
 
   async findPendingByClinic(clinicId: string): Promise<ClinicJoinRequest[]> {
-    const { data, error } = await this.supabase
-      .from("clinic_join_requests")
-      .select("*")
-      .eq("clinic_id", clinicId)
-      .eq("status", "pending")
-      .order("requested_at", { ascending: false });
-
-    if (error) {
-      throw new Error(`Error finding pending requests: ${error.message}`);
-    }
-
-    return data || [];
+    const { rows } = await this.pool.query<ClinicJoinRequest>(
+      `SELECT * FROM clinic_join_requests
+       WHERE clinic_id = $1 AND status = 'pending'
+       ORDER BY requested_at DESC`,
+      [clinicId]
+    );
+    return rows;
   }
 
   async findByClinicAndStatus(
     clinicId: string,
     status: ClinicJoinRequestStatus
   ): Promise<ClinicJoinRequest[]> {
-    const { data, error } = await this.supabase
-      .from("clinic_join_requests")
-      .select("*")
-      .eq("clinic_id", clinicId)
-      .eq("status", status)
-      .order("requested_at", { ascending: false });
-
-    if (error) {
-      throw new Error(`Error finding join requests: ${error.message}`);
-    }
-
-    return data || [];
+    const { rows } = await this.pool.query<ClinicJoinRequest>(
+      `SELECT * FROM clinic_join_requests
+       WHERE clinic_id = $1 AND status = $2
+       ORDER BY requested_at DESC`,
+      [clinicId, status]
+    );
+    return rows;
   }
 
   async updateStatus(
     requestId: string,
     status: ClinicJoinRequestStatus
   ): Promise<ClinicJoinRequest> {
-    const { data, error } = await this.supabase
-      .from("clinic_join_requests")
-      .update({
-        status,
-        responded_at: new Date().toISOString(),
-      })
-      .eq("request_id", requestId)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`Error updating join request: ${error.message}`);
-    }
-
-    return data;
+    const { rows } = await this.pool.query<ClinicJoinRequest>(
+      `UPDATE clinic_join_requests
+       SET status = $1, responded_at = NOW()
+       WHERE request_id = $2
+       RETURNING *`,
+      [status, requestId]
+    );
+    return rows[0];
   }
 
   async checkExistingPendingRequest(
     userId: string,
     clinicId: string
   ): Promise<ClinicJoinRequest | null> {
-    const { data, error } = await this.supabase
-      .from("clinic_join_requests")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("clinic_id", clinicId)
-      .eq("status", "pending")
-      .single();
-
-    if (error) {
-      if (error.code === "PGRST116") return null; // Not found
-      throw new Error(`Error checking existing request: ${error.message}`);
-    }
-
-    return data;
+    const { rows } = await this.pool.query<ClinicJoinRequest>(
+      `SELECT * FROM clinic_join_requests
+       WHERE user_id = $1 AND clinic_id = $2 AND status = 'pending'
+       LIMIT 1`,
+      [userId, clinicId]
+    );
+    return rows[0] ?? null;
   }
 }

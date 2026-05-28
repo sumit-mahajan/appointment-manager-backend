@@ -1,69 +1,55 @@
 import { injectable, inject } from "tsyringe";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../database/database.types.js";
+import type { Pool } from "pg";
 import type { Clinic, ClinicInsert } from "../models/Clinic.js";
 import type { User } from "../models/User.js";
 
 @injectable()
 export class ClinicRepository {
-  constructor(
-    @inject("SupabaseClient")
-    private supabase: SupabaseClient<Database>
-  ) {}
+  constructor(@inject("DbPool") private pool: Pool) {}
 
   async create(clinicData: ClinicInsert): Promise<Clinic> {
-    const { data, error } = await this.supabase
-      .from("clinics")
-      .insert(clinicData)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`Error creating clinic: ${error.message}`);
-    }
-
-    return data;
+    const { rows } = await this.pool.query<Clinic>(
+      `INSERT INTO clinics (name, contact, address, owner_id)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *`,
+      [
+        clinicData.name,
+        clinicData.contact ?? null,
+        clinicData.address ?? null,
+        clinicData.owner_id,
+      ]
+    );
+    return rows[0];
   }
 
   async findById(clinicId: string): Promise<Clinic | null> {
-    const { data, error } = await this.supabase
-      .from("clinics")
-      .select("*")
-      .eq("clinic_id", clinicId)
-      .single();
-
-    if (error) {
-      if (error.code === "PGRST116") return null; // Not found
-      throw new Error(`Error finding clinic: ${error.message}`);
-    }
-
-    return data;
+    const { rows } = await this.pool.query<Clinic>(
+      "SELECT * FROM clinics WHERE clinic_id = $1",
+      [clinicId]
+    );
+    return rows[0] ?? null;
   }
 
   async searchByName(name: string): Promise<Clinic[]> {
-    const { data, error } = await this.supabase
-      .from("clinics")
-      .select("*")
-      .ilike("name", `%${name}%`);
+    const { rows } = await this.pool.query<Clinic>(
+      "SELECT * FROM clinics WHERE name ILIKE $1 ORDER BY name ASC",
+      [`%${name}%`]
+    );
+    return rows;
+  }
 
-    if (error) {
-      throw new Error(`Error searching clinics: ${error.message}`);
-    }
-
-    return data || [];
+  async listAll(): Promise<Clinic[]> {
+    const { rows } = await this.pool.query<Clinic>(
+      "SELECT * FROM clinics ORDER BY name ASC"
+    );
+    return rows;
   }
 
   async listStaff(clinicId: string): Promise<User[]> {
-    const { data, error } = await this.supabase
-      .from("users")
-      .select("*")
-      .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      throw new Error(`Error listing clinic staff: ${error.message}`);
-    }
-
-    return data || [];
+    const { rows } = await this.pool.query<User>(
+      "SELECT * FROM users WHERE clinic_id = $1 ORDER BY created_at DESC",
+      [clinicId]
+    );
+    return rows;
   }
 }

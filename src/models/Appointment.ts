@@ -1,11 +1,20 @@
-import type { Database } from "../database/database.types.js";
+import type {
+  AppointmentRow,
+  ClinicJoinRequestRow,
+  ClinicRow,
+  PatientRow,
+  UserRow,
+} from "../database/database.types.js";
 
-// Use generated Supabase types as base
-export type Appointment = Database["public"]["Tables"]["appointments"]["Row"];
-export type AppointmentInsert =
-  Database["public"]["Tables"]["appointments"]["Insert"];
-export type AppointmentUpdate =
-  Database["public"]["Tables"]["appointments"]["Update"];
+export type Appointment = AppointmentRow;
+export type AppointmentInsert = Partial<AppointmentRow> &
+  Pick<
+    AppointmentRow,
+    "start_datetime" | "duration_in_minutes"
+  >;
+export type AppointmentUpdate = Partial<
+  Omit<AppointmentRow, "appointment_id" | "created_at">
+>;
 
-// Type-safe status enum
 export type AppointmentStatus = "pending" | "confirm" | "cancel";
+export type BookedVia = "staff" | "patient";
